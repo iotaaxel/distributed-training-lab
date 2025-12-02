@@ -1,28 +1,18 @@
-"""Basic tests for trainers."""
+"""Basic tests for training scripts."""
 
 import torch
 import pytest
 from pathlib import Path
 import sys
+import os
 
 # Add src to path
-sys.path.insert(0, str(Path(__file__).parent.parent))
+src_path = Path(__file__).parent.parent / "src"
+sys.path.insert(0, str(src_path))
 
-from src.models import SimpleModel
-from src.training import DDPTrainer, FSDPTrainer
-from src.utils.config import get_default_config
-
-
-@pytest.fixture
-def config():
-    """Get default config for testing."""
-    config = get_default_config()
-    # Use smaller model for faster tests
-    config["model"]["hidden_size"] = 256
-    config["model"]["num_layers"] = 2
-    config["benchmark"]["warmup_steps"] = 2
-    config["benchmark"]["profile_steps"] = 5
-    return config
+# Import from the flat module files
+from models import create_model
+from data import get_cifar10_dataset, get_dataloader
 
 
 @pytest.fixture
@@ -33,78 +23,39 @@ def device():
     return torch.device("cpu")
 
 
-def test_model_forward(config, device):
+def test_model_forward(device):
     """Test that model can do forward pass."""
-    model = SimpleModel(
-        vocab_size=config["model"]["vocab_size"],
-        hidden_size=config["model"]["hidden_size"],
-        num_layers=config["model"]["num_layers"],
-        num_heads=config["model"]["num_heads"],
-        dropout=config["model"]["dropout"],
+    model = create_model(
+        model_name="small_resnet",
+        num_layers=18,
+        num_classes=10
     ).to(device)
     
-    batch_size = config["training"]["batch_size"]
-    seq_len = config["training"]["seq_len"]
-    vocab_size = config["model"]["vocab_size"]
-    
-    x = torch.randint(0, vocab_size, (batch_size, seq_len), device=device)
+    # Create dummy input (CIFAR-10: 3 channels, 32x32)
+    batch_size = 4
+    x = torch.randn(batch_size, 3, 32, 32, device=device)
     logits = model(x)
     
-    assert logits.shape == (batch_size, seq_len, vocab_size)
+    assert logits.shape == (batch_size, 10)  # 10 classes for CIFAR-10
 
 
-def test_ddp_trainer_single_gpu(config, device):
-    """Test DDP trainer on single GPU."""
-    if device.type == 'cpu':
-        pytest.skip("Skipping GPU test on CPU")
-    
-    model = SimpleModel(
-        vocab_size=config["model"]["vocab_size"],
-        hidden_size=config["model"]["hidden_size"],
-        num_layers=config["model"]["num_layers"],
-        num_heads=config["model"]["num_heads"],
-        dropout=config["model"]["dropout"],
-    )
-    
-    trainer = DDPTrainer(
-        model=model,
-        config=config,
-        device=device,
+def test_dataloader_creation():
+    """Test that dataloader can be created."""
+    dataset = get_cifar10_dataset(root="./data", train=True)
+    dataloader = get_dataloader(
+        dataset,
+        batch_size=32,
+        shuffle=True,
+        num_workers=0,  # Use 0 for testing to avoid multiprocessing issues
         rank=0,
         world_size=1,
     )
     
-    # Run a few steps
-    summary = trainer.train(num_steps=5, warmup_steps=2)
-    
-    assert "avg_step_time" in summary
-    assert "avg_loss" in summary
-
-
-def test_fsdp_trainer_single_gpu(config, device):
-    """Test FSDP trainer on single GPU."""
-    if device.type == 'cpu':
-        pytest.skip("Skipping GPU test on CPU")
-    
-    model = SimpleModel(
-        vocab_size=config["model"]["vocab_size"],
-        hidden_size=config["model"]["hidden_size"],
-        num_layers=config["model"]["num_layers"],
-        num_heads=config["model"]["num_heads"],
-        dropout=config["model"]["dropout"],
-    )
-    
-    trainer = FSDPTrainer(
-        model=model,
-        config=config,
-        device=device,
-        rank=0,
-        world_size=1,
-    )
-    
-    # Run a few steps
-    summary = trainer.train(num_steps=5, warmup_steps=2)
-    
-    assert "avg_step_time" in summary
-    assert "avg_loss" in summary
-
+    # Check that we can get a batch
+    batch = next(iter(dataloader))
+    images, labels = batch
+    assert images.shape[0] == 32  # batch size
+    assert images.shape[1] == 3   # RGB channels
+    assert images.shape[2] == 32  # height
+    assert images.shape[3] == 32  # width
+    assert labels.shape[0] == 32  # batch size
