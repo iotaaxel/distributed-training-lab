@@ -1,0 +1,23 @@
+# DDP Training Configuration
+
+model:
+  vocab_size: 10000
+  hidden_size: 1024
+  num_layers: 12
+  num_heads: 16
+  dropout: 0.1
+
+training:
+  batch_size: 32
+  seq_len: 512
+  num_epochs: 1
+  learning_rate: 1e-4
+  warmup_steps: 100
+
+data:
+  synthetic: true
+
+benchmark:
+  warmup_steps: 10
+  profile_steps: 50
+

@@ -1,0 +1,12 @@
+# DDP training configuration for CIFAR-10 ResNet
+
+model:
+  name: "small_resnet"
+  num_layers: 18  # ResNet-18 style
+
+training:
+  batch_size: 128  # Per-GPU batch size
+  num_epochs: 10
+  learning_rate: 0.1
+  optimizer: "sgd"  # Options: "sgd" or "adam"
+
