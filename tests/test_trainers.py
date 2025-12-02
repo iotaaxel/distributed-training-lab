@@ -41,21 +41,24 @@ def test_model_forward(device):
 
 def test_dataloader_creation():
     """Test that dataloader can be created."""
-    dataset = get_cifar10_dataset(root="./data", train=True)
-    dataloader = get_dataloader(
-        dataset,
-        batch_size=32,
-        shuffle=True,
-        num_workers=0,  # Use 0 for testing to avoid multiprocessing issues
-        rank=0,
-        world_size=1,
-    )
-    
-    # Check that we can get a batch
-    batch = next(iter(dataloader))
-    images, labels = batch
-    assert images.shape[0] == 32  # batch size
-    assert images.shape[1] == 3   # RGB channels
-    assert images.shape[2] == 32  # height
-    assert images.shape[3] == 32  # width
-    assert labels.shape[0] == 32  # batch size
+    try:
+        dataset = get_cifar10_dataset(root="./data", train=True)
+        dataloader = get_dataloader(
+            dataset,
+            batch_size=32,
+            shuffle=True,
+            num_workers=0,  # Use 0 for testing to avoid multiprocessing issues
+            rank=0,
+            world_size=1,
+        )
+        
+        # Check that we can get a batch
+        batch = next(iter(dataloader))
+        images, labels = batch
+        assert images.shape[0] == 32  # batch size
+        assert images.shape[1] == 3   # RGB channels
+        assert images.shape[2] == 32  # height
+        assert images.shape[3] == 32  # width
+        assert labels.shape[0] == 32  # batch size
+    except ImportError:
+        pytest.skip("torchvision not available")
