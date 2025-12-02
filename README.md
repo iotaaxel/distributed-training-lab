@@ -1,6 +1,31 @@
 # Distributed Training Lab
 
+<div align="center">
+
+```
+╔══════════════════════════════════════════════════════════════╗
+║                                                              ║
+║     ██████╗ ██╗██████╗ ████████╗███████╗██████╗ ██╗   ██╗    ║
+║    ██╔═══██╗██║██╔══██╗╚══██╔══╝██╔════╝██╔══██╗██║   ██║    ║
+║    ██║   ██║██║██████╔╝   ██║   █████╗  ██████╔╝██║   ██║    ║
+║    ██║   ██║██║██╔══██╗   ██║   ██╔══╝  ██╔══██╗██║   ██║    ║
+║    ╚██████╔╝██║██║  ██║   ██║   ███████╗██║  ██║╚██████╔╝    ║
+║     ╚═════╝ ╚═╝╚═╝  ╚═╝   ╚═╝   ╚══════╝╚═╝  ╚═╝ ╚═════╝     ║
+║                                                              ║
+║         DDP • FSDP • Benchmarking • Single-Node              ║
+╚══════════════════════════════════════════════════════════════╝
+```
+
 **Minimal PyTorch DDP/FSDP lab for benchmarking distributed training on a single node.**
+
+[![PyTorch](https://img.shields.io/badge/PyTorch-2.2+-ee4c2c?style=flat-square&logo=pytorch)](https://pytorch.org/)
+[![Python](https://img.shields.io/badge/Python-3.8+-3776ab?style=flat-square&logo=python)](https://www.python.org/)
+[![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
+[![Code Style](https://img.shields.io/badge/Code%20Style-Black-000000?style=flat-square)](https://github.com/psf/black)
+
+</div>
+
+---
 
 ## Motivation
 
